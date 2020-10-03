@@ -3,7 +3,6 @@ import './App.css';
 import Solution from './components/Solution';
 import Score from './components/Score';
 import Letters from './components/Letters';
-import { render } from '@testing-library/react';
 import EndGame from './components/EndGame';
 import { getRandomInt } from './utils/getRandomInt'
 import { solutions } from "./solutions/solutions";
@@ -13,8 +12,8 @@ class App extends Component {
     super()
     this.state = {
       letterStatus: this.generateLetterStatuses(),
-      solutionIndexesHistory: {},
       solution: this.generateSolution(),
+      solutionIndexesHistory: { 0: true },
       score: 100,
       solutionsDepleted: false
     }
@@ -30,13 +29,13 @@ class App extends Component {
   }
 
   generateSolution = () => {
-    let solutionIndex = getRandomInt(solutions.length);
     if (!this.state) {
-      const solution = solutions[solutionIndex];
+      const solution = solutions[0];
       solution.revealed = false;
 
       return solution;
     } else {
+      let solutionIndex = getRandomInt(solutions.length);
       while (this.state.solutionIndexesHistory[solutionIndex]) {
         solutionIndex = getRandomInt(solutions.length);
       }
@@ -131,11 +130,12 @@ class App extends Component {
 
   stopGame = () => {
     const depletion = true;
-    this.setState({ solutionsDepleted: depletion })
+    this.setState({ solutionsDepleted: depletion });
   }
 
   restartGame = async () => {
-    if (solutions.length === Object.keys(this.state.solutionIndexesHistory)) {
+    if (solutions.length === Object.keys(this.state.solutionIndexesHistory).length) {
+      console.log('Game completed, stopping...');
       return this.stopGame()
     }
 
@@ -143,12 +143,18 @@ class App extends Component {
     const resetLetterStatus = this.generateLetterStatuses();
     const resetScore = 100;
 
-    this.setState({ solution: newSolution, letterStatus: resetLetterStatus, score: resetScore })
+    this.setState({ solution: newSolution, letterStatus: resetLetterStatus, score: resetScore });
 
   }
 
+  isGameEnd = () => {
+    if (this.state.solutionsDepleted || this.state.solution.revealed || this.state.score <= 0) {
+      return true;
+    } else { return false; }
+  }
+
   render() {
-    return this.state.solutionsDepleted || this.state.solution.revealed || this.state.score <= 0 ? this.renderEndGame() : this.renderGame()
+    return this.isGameEnd() ? this.renderEndGame() : this.renderGame()
   }
 
 }
