@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 class Score extends Component {
     render() {
         return (
-            <div>
+            <div className={this.props.scoreClass}>
                 <p>Score: {this.props.score}</p>
             </div>
         );

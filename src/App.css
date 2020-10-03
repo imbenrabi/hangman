@@ -6,3 +6,15 @@
 .available-letters .letter{
   cursor: pointer;
 }
+
+.high-score{
+  color: green;
+}
+
+.medium-score{
+  color: orange;
+}
+
+.low-score{
+  color: orangered;
+}
