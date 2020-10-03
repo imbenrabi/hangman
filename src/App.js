@@ -1,23 +1,22 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import Solution from './components/Solution';
 import Score from './components/Score';
 import Letters from './components/Letters';
 import { render } from '@testing-library/react';
 import EndGame from './components/EndGame';
+import { getRandomInt } from './utils/getRandomInt'
+import { solutions } from "./solutions/solutions";
 
 class App extends Component {
   constructor() {
     super()
     this.state = {
       letterStatus: this.generateLetterStatuses(),
-      solution: {
-        word: 'SECRET',
-        hint: 'Its a secret.',
-        revealed: false
-      },
-      score: 100
+      solutionIndexesHistory: {},
+      solution: this.generateSolution(),
+      score: 100,
+      solutionsDepleted: false
     }
   }
 
@@ -28,6 +27,26 @@ class App extends Component {
     }
 
     return letterStatus;
+  }
+
+  generateSolution = () => {
+    let solutionIndex = getRandomInt(solutions.length);
+    if (!this.state) {
+      const solution = solutions[solutionIndex];
+      solution.revealed = false;
+
+      return solution;
+    } else {
+      while (this.state.solutionIndexesHistory[solutionIndex]) {
+        solutionIndex = getRandomInt(solutions.length);
+      }
+
+      const solution = solutions[solutionIndex];
+      solution.revealed = false;
+
+      this.state.solutionIndexesHistory[solutionIndex] = true
+      return solution;
+    }
   }
 
   pickLetter = (letter) => {
@@ -98,7 +117,7 @@ class App extends Component {
 
   renderGame = () => {
     return (
-      <div>
+      <div className="game">
         <Score score={this.state.score} scoreClass={this.setScoreClass()} />
         <Solution letterStatus={this.state.letterStatus} solution={this.state.solution} />
         <Letters letterStatus={this.state.letterStatus} pickLetter={this.pickLetter} />
@@ -106,10 +125,30 @@ class App extends Component {
     )
   }
 
+  renderEndGame = () => {
+    return <EndGame win={this.state.solution.revealed} secretWord={this.state.solution.word} restart={this.restartGame} depleted={this.state.solutionsDepleted} />
+  }
+
+  stopGame = () => {
+    const depletion = true;
+    this.setState({ solutionsDepleted: depletion })
+  }
+
+  restartGame = async () => {
+    if (solutions.length === Object.keys(this.state.solutionIndexesHistory)) {
+      return this.stopGame()
+    }
+
+    const newSolution = this.generateSolution();
+    const resetLetterStatus = this.generateLetterStatuses();
+    const resetScore = 100;
+
+    this.setState({ solution: newSolution, letterStatus: resetLetterStatus, score: resetScore })
+
+  }
+
   render() {
-    return this.state.solution.revealed || this.state.score <= 0 ?
-      <EndGame win={this.state.solution.revealed} secretWord={this.state.solution.word} /> :
-      this.renderGame()
+    return this.state.solutionsDepleted || this.state.solution.revealed || this.state.score <= 0 ? this.renderEndGame() : this.renderGame()
   }
 
 }

@@ -1,3 +1,13 @@
+.end-game{
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.game{
+  max-width: 650px;
+  margin: 0 auto;
+}
+
 .letter-crossed{
   text-decoration: line-through;
   color: grey;
